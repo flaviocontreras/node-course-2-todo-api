@@ -9,6 +9,7 @@ var { mongoose } = require('./db/mongoose');
 var { Todo } = require('./models/todo');
 var { User } = require('./models/user');
 
+
 const PORT = process.env.PORT || 3000;
 
 var app = express();
@@ -39,7 +40,6 @@ app.get('/todos', (req, res) => {
 
 app.get('/todos/:id', (req, res) => {
   var { id } = req.params;
-  console.log(id);
   // Valid id using isValid
   if (!ObjectID.isValid(id)){
     return res.status(404).send();
@@ -100,6 +100,21 @@ app.patch('/todos/:id', (req, res) => {
     res.status(400).send();
   });
 
+});
+
+// POST /users
+app.post('/users', (req, res) => {
+  let body = _.pick(req.body, ['email', 'password']);
+
+  let user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
 });
 
 app.listen(PORT, () => {
